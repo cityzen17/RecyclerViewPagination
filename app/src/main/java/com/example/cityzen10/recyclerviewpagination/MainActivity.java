@@ -1,6 +1,5 @@
 package com.example.cityzen10.recyclerviewpagination;
 
-import android.arch.persistence.room.Room;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -13,33 +12,22 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import com.example.cityzen10.recyclerviewpagination.api.Client;
 import com.example.cityzen10.recyclerviewpagination.api.Service;
-import com.example.cityzen10.recyclerviewpagination.database.User;
-import com.example.cityzen10.recyclerviewpagination.database.UserRoomDatabase;
 import com.example.cityzen10.recyclerviewpagination.model.Person;
 import com.example.cityzen10.recyclerviewpagination.model.PersonResponse;
 import com.example.cityzen10.recyclerviewpagination.utils.PaginationScrollListener;
 
-import java.io.IOException;
 import java.util.List;
 
-import okhttp3.Cache;
-import okhttp3.Interceptor;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
-    public static UserRoomDatabase userRoomDatabase;
     PaginationAdapter adapter;
     LinearLayoutManager linearLayoutManager;
 
