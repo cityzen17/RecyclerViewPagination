@@ -83,13 +83,11 @@ public class PersonResponse implements Parcelable {
         this.perPage = in.readInt();
 
     }
-
     public static final Creator<PersonResponse> CREATOR = new Creator<PersonResponse>() {
         @Override
         public PersonResponse createFromParcel(Parcel source) {
             return new PersonResponse(source);
         }
-
         @Override
         public PersonResponse[] newArray(int size) {
             return new PersonResponse[size];

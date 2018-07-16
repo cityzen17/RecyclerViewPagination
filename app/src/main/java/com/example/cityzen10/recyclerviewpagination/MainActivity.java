@@ -1,5 +1,9 @@
 package com.example.cityzen10.recyclerviewpagination;
 
+import android.arch.persistence.room.Room;
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
@@ -9,23 +13,33 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
-import com.delaroystudios.paginationinfinitescroll.utils.PaginationScrollListener;
 import com.example.cityzen10.recyclerviewpagination.api.Client;
 import com.example.cityzen10.recyclerviewpagination.api.Service;
+import com.example.cityzen10.recyclerviewpagination.database.User;
+import com.example.cityzen10.recyclerviewpagination.database.UserRoomDatabase;
 import com.example.cityzen10.recyclerviewpagination.model.Person;
 import com.example.cityzen10.recyclerviewpagination.model.PersonResponse;
+import com.example.cityzen10.recyclerviewpagination.utils.PaginationScrollListener;
 
+import java.io.IOException;
 import java.util.List;
 
+import okhttp3.Cache;
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
-
+    public static UserRoomDatabase userRoomDatabase;
     PaginationAdapter adapter;
     LinearLayoutManager linearLayoutManager;
 
@@ -35,31 +49,21 @@ public class MainActivity extends AppCompatActivity {
     private static final int PAGE_START = 1;
     private boolean isLoading = false;
     private boolean isLastPage = false;
-    // limiting to 5 for this tutorial, since total pages in actual API is very large. Feel free to modify.
     private int TOTAL_PAGES = 4;
     private int currentPage = PAGE_START;
-
     private Service personService;
-
+    int cacheSize=10*1024*1024;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         rv = (RecyclerView) findViewById(R.id.main_recycler);
         progressBar = (ProgressBar) findViewById(R.id.main_progress);
-
         adapter = new PaginationAdapter(this);
-
-        // rv.setLayoutManager(new GridLayoutManager(this, 2));
-        //linearLayoutManager = new GridLayoutManager(this, 2);
-
         linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         rv.setLayoutManager(linearLayoutManager);
-
         rv.setItemAnimator(new DefaultItemAnimator());
-
         rv.setAdapter(adapter);
 
         rv.addOnScrollListener(new PaginationScrollListener(linearLayoutManager) {
@@ -74,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
                     public void run() {
                         loadNextPage();
                     }
-                }, 1500);
+                }, 3000);
             }
 
             @Override
@@ -92,12 +96,9 @@ public class MainActivity extends AppCompatActivity {
                 return isLoading;
             }
         });
-
         //init service and load data
         personService = Client.getClient().create(Service.class);
-
         loadFirstPage();
-
     }
 
     private void loadFirstPage() {
@@ -112,7 +113,8 @@ public class MainActivity extends AppCompatActivity {
                 progressBar.setVisibility(View.GONE);
                 adapter.addAll(results);
 
-                if (currentPage != TOTAL_PAGES) adapter.addLoadingFooter();
+                if (currentPage != TOTAL_PAGES)
+                    adapter.addLoadingFooter();
                 else isLastPage = true;
             }
 
@@ -130,9 +132,17 @@ public class MainActivity extends AppCompatActivity {
         assert topPersons != null;
         return topPersons.getData();
     }
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        assert connectivityManager != null;
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
 
     private void loadNextPage() {
         Log.d(TAG, "loadNextPage: " + currentPage);
+
 
         callTopPersons().enqueue(new Callback<PersonResponse>() {
             @Override
@@ -155,7 +165,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Performs a Retrofit call to the top rated movies API.
+     * Performs a Retrofit call to the top persons API.
      * Same API call for Pagination.
      * As {@link #currentPage} will be incremented automatically
      * by @{@link PaginationScrollListener} to load next page.
@@ -164,7 +174,5 @@ public class MainActivity extends AppCompatActivity {
         return personService.getUsers(
                 currentPage
         );
-
-
     }
 }

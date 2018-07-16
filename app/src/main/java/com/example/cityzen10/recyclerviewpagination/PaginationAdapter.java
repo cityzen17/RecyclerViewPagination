@@ -131,6 +131,7 @@ public class PaginationAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     public void addAll(List<Person> moveResults) {
         for (Person result : moveResults) {
             add(result);
+
         }
     }
 
@@ -187,7 +188,6 @@ public class PaginationAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
         public MovieVH(View itemView) {
             super(itemView);
-
             personid = itemView.findViewById(R.id.person_id);
             pfirstname = itemView.findViewById(R.id.first_Name);
             plastname = itemView.findViewById(R.id.last_name);
@@ -195,14 +195,10 @@ public class PaginationAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             mProgress = itemView.findViewById(R.id.movie_progress);
         }
     }
-
-
     protected class LoadingVH extends RecyclerView.ViewHolder {
 
         public LoadingVH(View itemView) {
             super(itemView);
         }
     }
-
-
 }
